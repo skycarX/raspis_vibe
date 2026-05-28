@@ -1,0 +1,1869 @@
+openapi: 3.0.3
+info:
+  title: ''
+  version: 0.0.0
+paths:
+  /api/academic-years/:
+    get:
+      operationId: academic_years_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: school
+        schema:
+          type: integer
+      tags:
+      - academic-years
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAcademicYearList'
+          description: ''
+  /api/academic-years/{id}/:
+    get:
+      operationId: academic_years_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Учебный год.
+        required: true
+      tags:
+      - academic-years
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcademicYear'
+          description: ''
+  /api/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: |-
+        Takes a set of user credentials and returns an access and refresh JSON web
+        token pair to prove the authentication of those credentials.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenObtainPair'
+          description: ''
+  /api/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/auth/refresh/:
+    post:
+      operationId: auth_refresh_create
+      description: |-
+        Takes a refresh type JSON web token and returns an access type JSON web
+        token if the refresh token is valid.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
+  /api/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: POST /api/auth/register/ — регистрация нового пользователя.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Register'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Register'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Register'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Register'
+          description: ''
+  /api/bell-schedules/:
+    get:
+      operationId: bell_schedules_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: school
+        schema:
+          type: integer
+      - in: query
+        name: shift_number
+        schema:
+          type: integer
+      tags:
+      - bell-schedules
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBellScheduleList'
+          description: ''
+  /api/bell-schedules/{id}/:
+    get:
+      operationId: bell_schedules_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Звонок.
+        required: true
+      tags:
+      - bell-schedules
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BellSchedule'
+          description: ''
+  /api/class-groups/:
+    get:
+      operationId: class_groups_list
+      parameters:
+      - in: query
+        name: academic_year
+        schema:
+          type: integer
+      - in: query
+        name: grade_number
+        schema:
+          type: integer
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: school
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: shift_number
+        schema:
+          type: integer
+      tags:
+      - class-groups
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedClassGroupList'
+          description: ''
+  /api/class-groups/{id}/:
+    get:
+      operationId: class_groups_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Класс.
+        required: true
+      tags:
+      - class-groups
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ClassGroup'
+          description: ''
+  /api/rooms/:
+    get:
+      operationId: rooms_list
+      parameters:
+      - in: query
+        name: is_specialized
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: school
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: type
+        schema:
+          type: string
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRoomList'
+          description: ''
+  /api/rooms/{id}/:
+    get:
+      operationId: rooms_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Кабинет.
+        required: true
+      tags:
+      - rooms
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'
+          description: ''
+  /api/schedule/:
+    get:
+      operationId: schedule_list
+      description: |-
+        Расписание.
+        - GET (list/retrieve) — все авторизованные.
+        - POST/PUT/PATCH/DELETE — только is_staff (администраторы).
+      parameters:
+      - in: query
+        name: academic_year
+        schema:
+          type: integer
+      - in: query
+        name: class_group
+        schema:
+          type: integer
+      - in: query
+        name: class_group__school
+        schema:
+          type: integer
+      - in: query
+        name: day_of_week
+        schema:
+          type: integer
+      - in: query
+        name: is_substitution
+        schema:
+          type: boolean
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: room
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - in: query
+        name: subgroup
+        schema:
+          type: integer
+      - in: query
+        name: subject
+        schema:
+          type: integer
+      - in: query
+        name: teacher
+        schema:
+          type: integer
+      - in: query
+        name: week_parity
+        schema:
+          type: integer
+          title: Чётность недели
+          enum:
+          - 0
+          - 1
+          - 2
+        description: |-
+          * `0` - Обе недели
+          * `1` - Нечётная
+          * `2` - Чётная
+      tags:
+      - schedule
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedScheduleEntryReadList'
+          description: ''
+    post:
+      operationId: schedule_create
+      description: |-
+        Расписание.
+        - GET (list/retrieve) — все авторизованные.
+        - POST/PUT/PATCH/DELETE — только is_staff (администраторы).
+      tags:
+      - schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleEntryWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ScheduleEntryWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ScheduleEntryWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleEntryWrite'
+          description: ''
+  /api/schedule/{id}/:
+    get:
+      operationId: schedule_retrieve
+      description: |-
+        Расписание.
+        - GET (list/retrieve) — все авторизованные.
+        - POST/PUT/PATCH/DELETE — только is_staff (администраторы).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Урок в расписании.
+        required: true
+      tags:
+      - schedule
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleEntryRead'
+          description: ''
+    put:
+      operationId: schedule_update
+      description: |-
+        Расписание.
+        - GET (list/retrieve) — все авторизованные.
+        - POST/PUT/PATCH/DELETE — только is_staff (администраторы).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Урок в расписании.
+        required: true
+      tags:
+      - schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScheduleEntryWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ScheduleEntryWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ScheduleEntryWrite'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleEntryWrite'
+          description: ''
+    patch:
+      operationId: schedule_partial_update
+      description: |-
+        Расписание.
+        - GET (list/retrieve) — все авторизованные.
+        - POST/PUT/PATCH/DELETE — только is_staff (администраторы).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Урок в расписании.
+        required: true
+      tags:
+      - schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedScheduleEntryWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedScheduleEntryWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedScheduleEntryWrite'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleEntryWrite'
+          description: ''
+    delete:
+      operationId: schedule_destroy
+      description: |-
+        Расписание.
+        - GET (list/retrieve) — все авторизованные.
+        - POST/PUT/PATCH/DELETE — только is_staff (администраторы).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Урок в расписании.
+        required: true
+      tags:
+      - schedule
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/schedule/by-class/{class_group_id}/:
+    get:
+      operationId: schedule_by_class_retrieve
+      description: GET /api/schedule/by-class/{id}/?academic_year=X — расписание класса.
+      parameters:
+      - in: path
+        name: class_group_id
+        schema:
+          type: integer
+          title: Класс
+        required: true
+      tags:
+      - schedule
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleEntryWrite'
+          description: ''
+  /api/schedule/by-room/{room_id}/:
+    get:
+      operationId: schedule_by_room_retrieve
+      description: GET /api/schedule/by-room/{id}/?academic_year=X — расписание кабинета.
+      parameters:
+      - in: path
+        name: room_id
+        schema:
+          type: integer
+          title: Кабинет
+        required: true
+      tags:
+      - schedule
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleEntryWrite'
+          description: ''
+  /api/schedule/by-teacher/{teacher_id}/:
+    get:
+      operationId: schedule_by_teacher_retrieve
+      description: GET /api/schedule/by-teacher/{id}/?academic_year=X — расписание
+        учителя.
+      parameters:
+      - in: path
+        name: teacher_id
+        schema:
+          type: integer
+          title: Учитель
+        required: true
+      tags:
+      - schedule
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleEntryWrite'
+          description: ''
+  /api/schedule/generate/:
+    post:
+      operationId: schedule_generate_create
+      tags:
+      - schedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateScheduleRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/GenerateScheduleRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/GenerateScheduleRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateScheduleResponse'
+          description: ''
+  /api/schema/:
+    get:
+      operationId: schema_retrieve
+      description: |-
+        OpenApi3 schema for this API. Format can be selected via content negotiation.
+
+        - YAML: application/vnd.oai.openapi
+        - JSON: application/vnd.oai.openapi+json
+      parameters:
+      - in: query
+        name: format
+        schema:
+          type: string
+          enum:
+          - json
+          - yaml
+      - in: query
+        name: lang
+        schema:
+          type: string
+          enum:
+          - af
+          - ar
+          - ar-dz
+          - ast
+          - az
+          - be
+          - bg
+          - bn
+          - br
+          - bs
+          - ca
+          - ckb
+          - cs
+          - cy
+          - da
+          - de
+          - dsb
+          - el
+          - en
+          - en-au
+          - en-gb
+          - eo
+          - es
+          - es-ar
+          - es-co
+          - es-mx
+          - es-ni
+          - es-ve
+          - et
+          - eu
+          - fa
+          - fi
+          - fr
+          - fy
+          - ga
+          - gd
+          - gl
+          - he
+          - hi
+          - hr
+          - hsb
+          - hu
+          - hy
+          - ia
+          - id
+          - ig
+          - io
+          - is
+          - it
+          - ja
+          - ka
+          - kab
+          - kk
+          - km
+          - kn
+          - ko
+          - ky
+          - lb
+          - lt
+          - lv
+          - mk
+          - ml
+          - mn
+          - mr
+          - ms
+          - my
+          - nb
+          - ne
+          - nl
+          - nn
+          - os
+          - pa
+          - pl
+          - pt
+          - pt-br
+          - ro
+          - ru
+          - sk
+          - sl
+          - sq
+          - sr
+          - sr-latn
+          - sv
+          - sw
+          - ta
+          - te
+          - tg
+          - th
+          - tk
+          - tr
+          - tt
+          - udm
+          - uk
+          - ur
+          - uz
+          - vi
+          - zh-hans
+          - zh-hant
+      tags:
+      - schema
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/vnd.oai.openapi:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/yaml:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/vnd.oai.openapi+json:
+              schema:
+                type: object
+                additionalProperties: {}
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+  /api/schools/:
+    get:
+      operationId: schools_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSchoolList'
+          description: ''
+  /api/schools/{id}/:
+    get:
+      operationId: schools_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Школа.
+        required: true
+      tags:
+      - schools
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School'
+          description: ''
+  /api/subjects/:
+    get:
+      operationId: subjects_list
+      parameters:
+      - in: query
+        name: is_elective
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - subjects
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSubjectList'
+          description: ''
+  /api/subjects/{id}/:
+    get:
+      operationId: subjects_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Предмет.
+        required: true
+      tags:
+      - subjects
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subject'
+          description: ''
+  /api/teachers/:
+    get:
+      operationId: teachers_list
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - teachers
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTeacherList'
+          description: ''
+  /api/teachers/{id}/:
+    get:
+      operationId: teachers_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Учитель.
+        required: true
+      tags:
+      - teachers
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Teacher'
+          description: ''
+  /api/vacation-periods/:
+    get:
+      operationId: vacation_periods_list
+      parameters:
+      - in: query
+        name: academic_year
+        schema:
+          type: integer
+      - in: query
+        name: is_extra
+        schema:
+          type: boolean
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: vacation_type
+        schema:
+          type: integer
+      tags:
+      - vacation-periods
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVacationPeriodList'
+          description: ''
+  /api/vacation-periods/{id}/:
+    get:
+      operationId: vacation_periods_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Каникулы.
+        required: true
+      tags:
+      - vacation-periods
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VacationPeriod'
+          description: ''
+  /api/vacation-types/:
+    get:
+      operationId: vacation_types_list
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - vacation-types
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedVacationTypeList'
+          description: ''
+  /api/vacation-types/{id}/:
+    get:
+      operationId: vacation_types_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Тип каникул.
+        required: true
+      tags:
+      - vacation-types
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VacationType'
+          description: ''
+components:
+  schemas:
+    AcademicYear:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+          title: Дата начала
+        end_date:
+          type: string
+          format: date
+          title: Дата конца
+        total_weeks:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          title: Всего недель
+        school:
+          type: integer
+          title: Школа
+      required:
+      - end_date
+      - id
+      - school
+      - start_date
+      - total_weeks
+    BellSchedule:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        shift_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          title: Номер смены
+        period_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          title: Номер урока
+        start_time:
+          type: string
+          format: time
+          title: Начало
+        end_time:
+          type: string
+          format: time
+          title: Конец
+        break_after_minutes:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Перемена после (мин)
+        school:
+          type: integer
+          title: Школа
+      required:
+      - end_time
+      - id
+      - period_number
+      - school
+      - shift_number
+      - start_time
+    ClassGroup:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        subgroups:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassSubgroup'
+          readOnly: true
+        name:
+          type: string
+          title: Название (напр. 9А)
+          maxLength: 50
+        grade_number:
+          type: integer
+          maximum: 11
+          minimum: 1
+          title: Номер класса
+        education_level:
+          type: string
+          nullable: true
+          title: Уровень образования
+          maxLength: 100
+        shift_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          title: Смена
+        school:
+          type: integer
+          title: Школа
+        academic_year:
+          type: integer
+          title: Учебный год
+        class_specialisation:
+          type: integer
+          nullable: true
+          title: Специализация
+      required:
+      - academic_year
+      - grade_number
+      - id
+      - name
+      - school
+      - shift_number
+      - subgroups
+    ClassSubgroup:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название
+          maxLength: 50
+        size:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          title: Кол-во учеников
+        class_group:
+          type: integer
+          title: Класс
+      required:
+      - class_group
+      - id
+      - name
+      - size
+    GenerateScheduleRequest:
+      type: object
+      properties:
+        academic_year_id:
+          type: integer
+      required:
+      - academic_year_id
+    GenerateScheduleResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+      required:
+      - detail
+    PaginatedAcademicYearList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AcademicYear'
+    PaginatedBellScheduleList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BellSchedule'
+    PaginatedClassGroupList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ClassGroup'
+    PaginatedRoomList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Room'
+    PaginatedScheduleEntryReadList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScheduleEntryRead'
+    PaginatedSchoolList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/School'
+    PaginatedSubjectList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Subject'
+    PaginatedTeacherList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Teacher'
+    PaginatedVacationPeriodList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VacationPeriod'
+    PaginatedVacationTypeList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/VacationType'
+    PatchedScheduleEntryWrite:
+      type: object
+      description: Сериализатор для создания/обновления записей расписания (только
+        для админов).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        day_of_week:
+          type: integer
+          maximum: 7
+          minimum: 1
+          title: День недели (1=Пн)
+        period_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          title: Номер урока
+        week_parity:
+          allOf:
+          - $ref: '#/components/schemas/WeekParityEnum'
+          default: 0
+          title: Чётность недели
+          minimum: -2147483648
+          maximum: 2147483647
+        valid_from:
+          type: string
+          format: date
+          readOnly: true
+          title: Действует с
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+          title: Действует по
+        is_substitution:
+          type: boolean
+          title: Замена
+        class_group:
+          type: integer
+          title: Класс
+        subgroup:
+          type: integer
+          nullable: true
+          title: Подгруппа
+        subject:
+          type: integer
+          title: Предмет
+        teacher:
+          type: integer
+          title: Учитель
+        room:
+          type: integer
+          title: Кабинет
+        academic_year:
+          type: integer
+          title: Учебный год
+    Register:
+      type: object
+      properties:
+        username:
+          type: string
+          title: Имя пользователя
+          description: Обязательное поле. Не более 150 символов. Только буквы, цифры
+            и символы @/./+/-/_.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Адрес электронной почты
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        password2:
+          type: string
+          writeOnly: true
+          title: Подтверждение пароля
+      required:
+      - password
+      - password2
+      - username
+    Room:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        number:
+          type: string
+          title: Номер/название
+          maxLength: 50
+        type:
+          type: string
+          nullable: true
+          title: Тип
+          maxLength: 100
+        is_specialized:
+          type: boolean
+          title: Специализированный
+        school:
+          type: integer
+          title: Школа
+      required:
+      - id
+      - number
+      - school
+    ScheduleEntryRead:
+      type: object
+      description: Детальный сериализатор для фронта — подтягивает связанные объекты.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        class_group:
+          allOf:
+          - $ref: '#/components/schemas/ClassGroup'
+          readOnly: true
+        subgroup:
+          allOf:
+          - $ref: '#/components/schemas/ClassSubgroup'
+          readOnly: true
+        subject:
+          allOf:
+          - $ref: '#/components/schemas/Subject'
+          readOnly: true
+        teacher:
+          allOf:
+          - $ref: '#/components/schemas/Teacher'
+          readOnly: true
+        room:
+          allOf:
+          - $ref: '#/components/schemas/Room'
+          readOnly: true
+        week_parity_display:
+          type: string
+          readOnly: true
+        day_of_week_display:
+          type: string
+          readOnly: true
+        day_of_week:
+          type: integer
+          maximum: 7
+          minimum: 1
+          title: День недели (1=Пн)
+        period_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          title: Номер урока
+        week_parity:
+          allOf:
+          - $ref: '#/components/schemas/WeekParityEnum'
+          default: 0
+          title: Чётность недели
+          minimum: -2147483648
+          maximum: 2147483647
+        valid_from:
+          type: string
+          format: date
+          readOnly: true
+          title: Действует с
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+          title: Действует по
+        is_substitution:
+          type: boolean
+          title: Замена
+        academic_year:
+          type: integer
+          title: Учебный год
+      required:
+      - academic_year
+      - class_group
+      - day_of_week
+      - day_of_week_display
+      - id
+      - period_number
+      - room
+      - subgroup
+      - subject
+      - teacher
+      - valid_from
+      - week_parity_display
+    ScheduleEntryWrite:
+      type: object
+      description: Сериализатор для создания/обновления записей расписания (только
+        для админов).
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        day_of_week:
+          type: integer
+          maximum: 7
+          minimum: 1
+          title: День недели (1=Пн)
+        period_number:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          title: Номер урока
+        week_parity:
+          allOf:
+          - $ref: '#/components/schemas/WeekParityEnum'
+          default: 0
+          title: Чётность недели
+          minimum: -2147483648
+          maximum: 2147483647
+        valid_from:
+          type: string
+          format: date
+          readOnly: true
+          title: Действует с
+        valid_to:
+          type: string
+          format: date
+          nullable: true
+          title: Действует по
+        is_substitution:
+          type: boolean
+          title: Замена
+        class_group:
+          type: integer
+          title: Класс
+        subgroup:
+          type: integer
+          nullable: true
+          title: Подгруппа
+        subject:
+          type: integer
+          title: Предмет
+        teacher:
+          type: integer
+          title: Учитель
+        room:
+          type: integer
+          title: Кабинет
+        academic_year:
+          type: integer
+          title: Учебный год
+      required:
+      - academic_year
+      - class_group
+      - day_of_week
+      - id
+      - period_number
+      - room
+      - subject
+      - teacher
+      - valid_from
+    School:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        week_days_count:
+          type: integer
+          maximum: 6
+          minimum: 5
+        shift_count:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+      required:
+      - id
+      - name
+      - shift_count
+      - week_days_count
+    Subject:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Название
+          maxLength: 255
+        fgos_area:
+          type: string
+          nullable: true
+          title: Область ФГОС
+          maxLength: 255
+        is_elective:
+          type: boolean
+          title: Элективный
+        difficulty_rank:
+          type: integer
+          maximum: 2147483647
+          minimum: 1
+          title: Уровень сложности
+          nullable: true
+      required:
+      - id
+      - name
+    Teacher:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        full_name:
+          type: string
+          title: ФИО
+          maxLength: 255
+        category:
+          type: string
+          nullable: true
+          title: Категория
+          maxLength: 100
+      required:
+      - full_name
+      - id
+    TokenObtainPair:
+      type: object
+      properties:
+        username:
+          type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+      required:
+      - access
+      - refresh
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          title: Имя пользователя
+          description: Обязательное поле. Не более 150 символов. Только буквы, цифры
+            и символы @/./+/-/_.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        email:
+          type: string
+          format: email
+          title: Адрес электронной почты
+          maxLength: 254
+        is_staff:
+          type: boolean
+          title: Статус персонала
+          description: Отметьте, если пользователь может входить в административную
+            часть сайта.
+      required:
+      - id
+      - username
+    VacationPeriod:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        vacation_type_display:
+          type: string
+          readOnly: true
+        start_date:
+          type: string
+          format: date
+          title: Дата начала
+        end_date:
+          type: string
+          format: date
+          title: Дата конца
+        is_extra:
+          type: boolean
+          title: Дополнительные
+        academic_year:
+          type: integer
+          title: Учебный год
+        vacation_type:
+          type: integer
+          title: Тип каникул
+      required:
+      - academic_year
+      - end_date
+      - id
+      - start_date
+      - vacation_type
+      - vacation_type_display
+    VacationType:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        title:
+          type: string
+          title: Название
+          maxLength: 255
+      required:
+      - id
+      - title
+    WeekParityEnum:
+      enum:
+      - 0
+      - 1
+      - 2
+      type: integer
+      description: |-
+        * `0` - Обе недели
+        * `1` - Нечётная
+        * `2` - Чётная
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
