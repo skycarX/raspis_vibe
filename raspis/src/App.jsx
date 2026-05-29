@@ -259,14 +259,14 @@ function WeekCalendar({ schedule, onLessonClick }) {
 // function YearProgress({ academicYear, schedule = [] }) {
 //   const [progress, setProgress] = useState(0)
 //   const [weeksPassed, setWeeksPassed] = useState(0)
-  
+//   
 //   useEffect(() => {
 //     if (!academicYear?.start_date || !academicYear?.end_date || !academicYear?.total_weeks) return
-    
+//     
 //     const start = new Date(academicYear.start_date)
 //     const end = new Date(academicYear.end_date)
 //     const now = new Date()
-    
+//     
 //     if (now < start) {
 //       setProgress(0)
 //       setWeeksPassed(0)
@@ -281,11 +281,11 @@ function WeekCalendar({ schedule, onLessonClick }) {
 //       setWeeksPassed(Math.floor(passedDays / 7))
 //     }
 //   }, [academicYear])
-  
+//   
 //   const substitutionsCount = schedule.filter(s => s.is_substitution).length
 //   const lessonsCount = schedule.length
 //   const substitutionPercent = lessonsCount ? Math.round((substitutionsCount / lessonsCount) * 100) : 0
-  
+//   
 //   return (
 //     <div className="progress-year-card hover-lift">
 //       <div className="progress-year-header">
@@ -297,17 +297,17 @@ function WeekCalendar({ schedule, onLessonClick }) {
 //         </div>
 //         <div className="progress-year-percent">{Math.round(progress)}%</div>
 //       </div>
-      
+//       
 //       <div className="progress-bar-container">
 //         <div className="progress-bar-fill" style={{ width: `${progress}%` }} />
 //       </div>
-      
+//       
 //       <div className="progress-stats">
 //         <span>{weeksPassed} / {academicYear?.total_weeks || 0} недель</span>
 //         <span>🔄 Замен: {substitutionPercent}%</span>
 //         <span>📚 {lessonsCount} уроков</span>
 //       </div>
-      
+//       
 //       <div style={{ display: 'flex', alignItems: 'center', gap: 20, marginTop: 16, flexWrap: 'wrap' }}>
 //         <div className="donut-chart">
 //           <div className="donut-chart-inner">{substitutionPercent}%</div>
@@ -335,11 +335,11 @@ function formatTimeLeft(minutes) {
   if (minutes <= 0) return ''
   const hours = Math.floor(minutes / 60)
   const rest = minutes % 60
-  return hours ? hours + ' ? ' + rest + ' ???' : rest + ' ???'
+  return hours ? hours + ' ч ' + rest + ' мин' : rest + ' мин'
 }
 
 // ============================================
-// ???????
+// ВИДЖЕТЫ
 // ============================================
 function WidgetsGrid({ bellSchedules, schedule, rooms, weekDaysCount, onLessonClick }) {
   const [currentTime, setCurrentTime] = useState(new Date())
@@ -436,27 +436,27 @@ function WidgetsGrid({ bellSchedules, schedule, rooms, weekDaysCount, onLessonCl
 
   const freeRoomsNow = bellPeriods.length ? rooms.length - busyRoomsNow.length : null
   const countdown = currentBellByShift.size
-    ? '???? ?? ?????????? ???????'
+    ? 'Идет урок или перемена'
     : nextBell
-      ? '?? ' + nextBell.period_number + ' ????? ' + formatTimeLeft(nextBell.startMinutes - nowMinutes)
-      : '??? ????????? ?????'
+      ? 'До ' + nextBell.period_number + ' урока ' + formatTimeLeft(nextBell.startMinutes - nowMinutes)
+      : 'Нет уроков на сегодня'
 
   return (
     <div className="widgets-grid">
       <div className="widget-card current-lesson-widget hover-lift" onClick={() => currentLesson && onLessonClick?.(currentLesson.id)} style={{ cursor: currentLesson ? 'pointer' : 'default' }}>
-        <div className="widget-header"><div className="widget-icon"><Icon name="bell" /></div><div><div className="widget-title">?????? ???? ????</div></div></div>
-        {currentLesson ? <><div className="widget-value">{currentLesson.subject?.name || '-'}</div><div style={{ fontSize: 13, marginTop: 4 }}>{currentLesson.teacher?.full_name?.split(' ').slice(0, 2).join(' ')}</div><div className="countdown-timer">{countdown}</div><div style={{ fontSize: 11, marginTop: 8, opacity: 0.7 }}>???????: {currentLesson.room?.number || '-'}</div></> : <><div className="widget-value">??? ?????</div><div className="countdown-timer">{countdown}</div></>}
+        <div className="widget-header"><div className="widget-icon"><Icon name="bell" /></div><div><div className="widget-title">Текущий урок</div></div></div>
+        {currentLesson ? <><div className="widget-value">{currentLesson.subject?.name || '-'}</div><div style={{ fontSize: 13, marginTop: 4 }}>{currentLesson.teacher?.full_name?.split(' ').slice(0, 2).join(' ')}</div><div className="countdown-timer">{countdown}</div><div style={{ fontSize: 11, marginTop: 8, opacity: 0.7 }}>Кабинет: {currentLesson.room?.number || '-'}</div></> : <><div className="widget-value">Нет урока</div><div className="countdown-timer">{countdown}</div></>}
       </div>
 
-      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="calendar" /></div><div><div className="widget-title">??????? ??????</div></div></div><div className="widget-value">{todayLessons}</div><div style={{ fontSize: 13, marginTop: 8, color: 'var(--text-secondary)' }}>????? ? ??????????: {schedule.length}</div></div>
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="calendar" /></div><div><div className="widget-title">Сегодня уроков</div></div></div><div className="widget-value">{todayLessons}</div><div style={{ fontSize: 13, marginTop: 8, color: 'var(--text-secondary)' }}>Всего в расписании: {schedule.length}</div></div>
 
-      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="refresh" /></div><div><div className="widget-title">????????? ??????</div></div></div>{nearestSubstitution ? <><div className="widget-value">{nearestSubstitution.subject?.name}</div><div style={{ fontSize: 13 }}>{dayNamesShort[nearestSubstitution.day_of_week]}, {nearestSubstitution.period_number} ????</div><div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>???????: {nearestSubstitution.teacher?.full_name?.split(' ')[0]}</div></> : <div className="widget-value">??? ?????</div>}</div>
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="refresh" /></div><div><div className="widget-title">Ближайшая замена</div></div></div>{nearestSubstitution ? <><div className="widget-value">{nearestSubstitution.subject?.name}</div><div style={{ fontSize: 13 }}>{dayNamesShort[nearestSubstitution.day_of_week]}, {nearestSubstitution.period_number} урок</div><div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>Учитель: {nearestSubstitution.teacher?.full_name?.split(' ')[0]}</div></> : <div className="widget-value">Нет замен</div>}</div>
 
-      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="book" /></div><div><div className="widget-title">????????? ???????? ??????</div></div></div><div className="widget-value">{freeRoomsNow ?? '-'}</div><div style={{ fontSize: 13, marginTop: 8 }}>{bellPeriods.length ? '?? ' + rooms.length + ' ?????????' : '??? ?????? ? ???????'}</div>{busyRoomsNow.length > 0 && <div style={{ fontSize: 11, marginTop: 8, color: 'var(--text-secondary)' }}>?????? ??????: {busyRoomsNow.slice(0, 3).map((room) => room.number).join(', ')}{busyRoomsNow.length > 3 ? '...' : ''}</div>}</div>
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="book" /></div><div><div className="widget-title">Свободные кабинеты</div></div></div><div className="widget-value">{freeRoomsNow ?? '-'}</div><div style={{ fontSize: 13, marginTop: 8 }}>{bellPeriods.length ? 'Из ' + rooms.length + ' кабинетов' : 'Нет данных о звонках'}</div>{busyRoomsNow.length > 0 && <div style={{ fontSize: 11, marginTop: 8, color: 'var(--text-secondary)' }}>Занятые кабинеты: {busyRoomsNow.slice(0, 3).map((room) => room.number).join(', ')}{busyRoomsNow.length > 3 ? '...' : ''}</div>}</div>
 
-      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="trending" /></div><div><div className="widget-title">???????? ?? ????</div></div></div><div className="week-stats-chart">{Object.keys(lessonsByDay).map((day) => Number(day)).map((day) => <div key={day} style={{ flex: 1, textAlign: 'center' }}><div className="chart-bar" style={{ height: ((lessonsByDay[day] / maxLessons) * 60) + 'px' }} /><div className="chart-label">{dayNamesShort[day]}</div></div>)}</div></div>
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="trending" /></div><div><div className="widget-title">Нагрузка по дням</div></div></div><div className="week-stats-chart">{Object.keys(lessonsByDay).map((day) => Number(day)).map((day) => <div key={day} style={{ flex: 1, textAlign: 'center' }}><div className="chart-bar" style={{ height: ((lessonsByDay[day] / maxLessons) * 60) + 'px' }} /><div className="chart-label">{dayNamesShort[day]}</div></div>)}</div></div>
 
-      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="user" /></div><div><div className="widget-title">???????? ????????</div></div></div><div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{teacherLoad.map(([name, count], idx) => <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><div style={{ width: 24, height: 24, background: 'linear-gradient(135deg, ' + subjectColors[idx % subjectColors.length] + '40, ' + subjectColors[idx % subjectColors.length] + '20)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{idx + 1}</div><div style={{ flex: 1, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name.length > 20 ? name.slice(0, 20) + '?' : name}</div><div style={{ fontSize: 16, fontWeight: 700 }}>{count}</div></div>)}{teacherLoad.length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 16 }}>??? ??????</div>}</div></div>
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="user" /></div><div><div className="widget-title">Нагрузка учителей</div></div></div><div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{teacherLoad.map(([name, count], idx) => <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><div style={{ width: 24, height: 24, background: 'linear-gradient(135deg, ' + subjectColors[idx % subjectColors.length] + '40, ' + subjectColors[idx % subjectColors.length] + '20)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{idx + 1}</div><div style={{ flex: 1, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name.length > 20 ? name.slice(0, 20) + '…' : name}</div><div style={{ fontSize: 16, fontWeight: 700 }}>{count}</div></div>)}{teacherLoad.length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 16 }}>Нет данных</div>}</div></div>
     </div>
   )
 }
