@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Fragment, useCallback, useEffect, useMemo, useState } from 'react'
 import { api, tokenStore } from './api'
 import './App.css'
 
@@ -175,26 +175,6 @@ function Icon({ name }) {
 // ============================================
 // АНИМИРОВАННАЯ ВОЛНА ЗАГРУЗКИ
 // ============================================
-function LoadingWave({ height = 60 }) {
-  return (
-    <div className="loading-wave" style={{ height }}>
-      <div className="loading-wave-bar"></div>
-      <div className="loading-wave-bar"></div>
-      <div className="loading-wave-bar"></div>
-      <div className="loading-wave-bar"></div>
-      <div className="loading-wave-bar"></div>
-      <div className="loading-wave-bar"></div>
-      <div className="loading-wave-bar"></div>
-    </div>
-  )
-}
-
-function SkeletonLoader({ width = '100%', height = '20px', className = '' }) {
-  return (
-    <div className={`skeleton ${className}`} style={{ width, height }} />
-  )
-}
-
 // ============================================
 // КАЛЕНДАРНАЯ СЕТКА НЕДЕЛИ
 // ============================================
@@ -243,7 +223,7 @@ function WeekCalendar({ schedule, onLessonClick }) {
         ))}
         
         {Array.from({ length: maxPeriods }, (_, period) => (
-          <React.Fragment key={period}>
+          <Fragment key={period}>
             <div className="week-calendar-time">
               <div>{period + 1} урок</div>
             </div>
@@ -266,7 +246,7 @@ function WeekCalendar({ schedule, onLessonClick }) {
                 </div>
               )
             })}
-          </React.Fragment>
+          </Fragment>
         ))}
       </div>
     </div>
@@ -323,7 +303,7 @@ function WeekCalendar({ schedule, onLessonClick }) {
 //       </div>
       
 //       <div className="progress-stats">
-//         <span>📅 {weeksPassed} / {academicYear?.total_weeks || 0} недель</span>
+//         <span>{weeksPassed} / {academicYear?.total_weeks || 0} недель</span>
 //         <span>🔄 Замен: {substitutionPercent}%</span>
 //         <span>📚 {lessonsCount} уроков</span>
 //       </div>
@@ -344,347 +324,139 @@ function WeekCalendar({ schedule, onLessonClick }) {
 // ============================================
 // ВИДЖЕТЫ
 // ============================================
-function WidgetsGrid({ schedule, teachers, rooms, classGroups, onLessonClick }) {
-  const [currentLesson, setCurrentLesson] = useState(null)
-  const [countdown, setCountdown] = useState('')
+function toMinutes(value) {
+  if (!value) return null
+  const [hours, minutes] = value.split(':').map(Number)
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return null
+  return hours * 60 + minutes
+}
+
+function formatTimeLeft(minutes) {
+  if (minutes <= 0) return ''
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  return hours ? hours + ' ? ' + rest + ' ???' : rest + ' ???'
+}
+
+// ============================================
+// ???????
+// ============================================
+function WidgetsGrid({ bellSchedules, schedule, rooms, weekDaysCount, onLessonClick }) {
   const [currentTime, setCurrentTime] = useState(new Date())
-  
-  // Обновление времени
+
   useEffect(() => {
     const interval = setInterval(() => setCurrentTime(new Date()), 1000)
     return () => clearInterval(interval)
   }, [])
-  
-  // Виджет "Сейчас идёт урок"
-  useEffect(() => {
-    const now = currentTime
-    const currentHour = now.getHours()
-    const currentMinute = now.getMinutes()
-    
-    // Расписание уроков (примерное)
-    const periods = [
-      { num: 1, start: 8, startMin: 30, end: 9, endMin: 15 },
-      { num: 2, start: 9, startMin: 25, end: 10, endMin: 10 },
-      { num: 3, start: 10, startMin: 20, end: 11, endMin: 5 },
-      { num: 4, start: 11, startMin: 15, end: 12, endMin: 0 },
-      { num: 5, start: 12, startMin: 10, end: 12, endMin: 55 },
-      { num: 6, start: 13, startMin: 5, end: 13, endMin: 50 },
-      { num: 7, start: 14, startMin: 0, end: 14, endMin: 45 },
-      { num: 8, start: 14, startMin: 55, end: 15, endMin: 40 },
-    ]
-    
-    let current = null
-    let next = null
-    let timeToNext = ''
-    
-    for (let i = 0; i < periods.length; i++) {
-      const period = periods[i]
-      const periodStart = period.start * 60 + period.startMin
-      const periodEnd = period.end * 60 + period.endMin
-      const nowMinutes = currentHour * 60 + currentMinute
-      
-      if (nowMinutes >= periodStart && nowMinutes < periodEnd) {
-        current = period
-        const nextPeriod = periods[i + 1]
-        if (nextPeriod) {
-          const nextStart = nextPeriod.start * 60 + nextPeriod.startMin
-          const diff = nextStart - nowMinutes
-          if (diff > 0) {
-            const minutes = Math.floor(diff / 60)
-            const seconds = diff % 60
-            timeToNext = `до перемены ${minutes}:${seconds.toString().padStart(2, '0')}`
-          }
-        }
-        break
+
+  const bellPeriods = useMemo(() => {
+    return bellSchedules
+      .map((bell) => ({
+        ...bell,
+        startMinutes: toMinutes(bell.start_time),
+        endMinutes: toMinutes(bell.end_time),
+      }))
+      .filter((bell) => bell.startMinutes !== null && bell.endMinutes !== null)
+      .sort((a, b) => a.shift_number - b.shift_number || a.period_number - b.period_number)
+  }, [bellSchedules])
+
+  const nowMinutes = currentTime.getHours() * 60 + currentTime.getMinutes()
+  const today = currentTime.getDay() === 0 ? 7 : currentTime.getDay()
+
+  const currentBellByShift = useMemo(() => {
+    const map = new Map()
+    bellPeriods.forEach((bell) => {
+      if (nowMinutes >= bell.startMinutes && nowMinutes < bell.endMinutes) {
+        map.set(bell.shift_number, bell)
       }
-      
-      if (i < periods.length - 1) {
-        const nextPeriod = periods[i + 1]
-        const nextStart = nextPeriod.start * 60 + nextPeriod.startMin
-        if (nowMinutes < nextStart && (!next || nextStart < (next?.start * 60 + next?.startMin))) {
-          next = nextPeriod
-        }
-      }
-    }
-    
-    if (current) {
-      const lesson = schedule.find(l => l.period_number === current.num)
-      setCurrentLesson(lesson)
-      setCountdown(timeToNext || 'скоро перемена')
-    } else if (next) {
-      setCurrentLesson(null)
-      const nextStart = next.start * 60 + next.startMin
-      const nowMinutes = currentHour * 60 + currentMinute
-      const diff = nextStart - nowMinutes
-      const minutes = Math.floor(diff / 60)
-      const seconds = diff % 60
-      setCountdown(`до ${next.num} урока ${minutes}:${seconds.toString().padStart(2, '0')}`)
-    } else {
-      setCurrentLesson(null)
-      setCountdown('Уроки закончились')
-    }
-  }, [schedule, currentTime])
-  
-  // Статистика по дням недели
+    })
+    return map
+  }, [bellPeriods, nowMinutes])
+
+  const nextBell = useMemo(() => {
+    return bellPeriods.find((bell) => bell.startMinutes > nowMinutes) || null
+  }, [bellPeriods, nowMinutes])
+
   const lessonsByDay = useMemo(() => {
-    const counts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 }
-    schedule.forEach(entry => {
-      if (entry.day_of_week) counts[entry.day_of_week]++
+    const counts = {}
+    for (let day = 1; day <= weekDaysCount; day++) counts[day] = 0
+    schedule.forEach((entry) => {
+      if (entry.day_of_week && counts[entry.day_of_week] !== undefined) {
+        counts[entry.day_of_week] += 1
+      }
     })
     return counts
-  }, [schedule])
-  
+  }, [schedule, weekDaysCount])
+
   const maxLessons = Math.max(...Object.values(lessonsByDay), 1)
-  
-  // Статистика по учителям
+
   const teacherLoad = useMemo(() => {
     const load = {}
-    schedule.forEach(entry => {
+    schedule.forEach((entry) => {
       if (entry.teacher?.full_name) {
         load[entry.teacher.full_name] = (load[entry.teacher.full_name] || 0) + 1
       }
     })
     return Object.entries(load).sort((a, b) => b[1] - a[1]).slice(0, 5)
   }, [schedule])
-  
-  // Занятые кабинеты сейчас
+
+  const currentLessons = useMemo(() => {
+    if (!currentBellByShift.size) return []
+    return schedule.filter((entry) => {
+      const shift = entry.class_group?.shift_number
+      const bell = currentBellByShift.get(shift)
+      return entry.day_of_week === today && bell?.period_number === entry.period_number
+    })
+  }, [currentBellByShift, schedule, today])
+
+  const currentLesson = currentLessons[0] || null
+  const todayLessons = lessonsByDay[today] || 0
+
   const busyRoomsNow = useMemo(() => {
-    const now = currentTime
-    const currentHour = now.getHours()
-    const periods = [8, 9, 10, 11, 12, 13, 14, 15]
-    let currentPeriod = null
-    for (let i = 0; i < periods.length; i++) {
-      if (currentHour < periods[i] + 1) {
-        currentPeriod = i + 1
-        break
-      }
-    }
-    if (!currentPeriod) return []
-    const busy = schedule
-      .filter(s => s.day_of_week === (now.getDay() === 0 ? 7 : now.getDay()) && s.period_number === currentPeriod)
-      .map(s => s.room?.number)
-      .filter(Boolean)
-    return [...new Set(busy)]
-  }, [schedule, currentTime])
-  
-  // Сегодняшний день недели
-  const today = currentTime.getDay() === 0 ? 7 : currentTime.getDay()
-  const todayLessons = lessonsByDay[today]
-  
+    return [...new Map(
+      currentLessons
+        .map((lesson) => lesson.room)
+        .filter(Boolean)
+        .map((room) => [room.id, room])
+    ).values()]
+  }, [currentLessons])
+
+  const nearestSubstitution = useMemo(() => {
+    return schedule
+      .filter((entry) => entry.is_substitution)
+      .sort((a, b) => a.day_of_week - b.day_of_week || a.period_number - b.period_number)
+      .find((entry) => {
+        if (entry.day_of_week > today) return true
+        if (entry.day_of_week < today) return false
+        const shift = entry.class_group?.shift_number
+        const bell = currentBellByShift.get(shift) || nextBell
+        return !bell || entry.period_number >= bell.period_number
+      })
+  }, [currentBellByShift, nextBell, schedule, today])
+
+  const freeRoomsNow = bellPeriods.length ? rooms.length - busyRoomsNow.length : null
+  const countdown = currentBellByShift.size
+    ? '???? ?? ?????????? ???????'
+    : nextBell
+      ? '?? ' + nextBell.period_number + ' ????? ' + formatTimeLeft(nextBell.startMinutes - nowMinutes)
+      : '??? ????????? ?????'
+
   return (
     <div className="widgets-grid">
-      {/* Виджет "Сейчас идёт урок" */}
-      <div 
-        className="widget-card current-lesson-widget hover-lift"
-        onClick={() => currentLesson && onLessonClick?.(currentLesson.id)}
-        style={{ cursor: currentLesson ? 'pointer' : 'default' }}
-      >
-        <div className="widget-header">
-          <div className="widget-icon">
-            <Icon name="bell" />
-          </div>
-          <div>
-            <div className="widget-title">Сейчас идёт урок</div>
-          </div>
-        </div>
-        {currentLesson ? (
-          <>
-            <div className="widget-value">{currentLesson.subject?.name || '-'}</div>
-            <div style={{ fontSize: 13, marginTop: 4 }}>{currentLesson.teacher?.full_name?.split(' ').slice(0, 2).join(' ')}</div>
-            <div className="countdown-timer">{countdown}</div>
-            <div style={{ fontSize: 11, marginTop: 8, opacity: 0.7 }}>Кабинет: {currentLesson.room?.number || '-'}</div>
-          </>
-        ) : (
-          <>
-            <div className="widget-value">Перемена</div>
-            <div className="countdown-timer">{countdown}</div>
-          </>
-        )}
+      <div className="widget-card current-lesson-widget hover-lift" onClick={() => currentLesson && onLessonClick?.(currentLesson.id)} style={{ cursor: currentLesson ? 'pointer' : 'default' }}>
+        <div className="widget-header"><div className="widget-icon"><Icon name="bell" /></div><div><div className="widget-title">?????? ???? ????</div></div></div>
+        {currentLesson ? <><div className="widget-value">{currentLesson.subject?.name || '-'}</div><div style={{ fontSize: 13, marginTop: 4 }}>{currentLesson.teacher?.full_name?.split(' ').slice(0, 2).join(' ')}</div><div className="countdown-timer">{countdown}</div><div style={{ fontSize: 11, marginTop: 8, opacity: 0.7 }}>???????: {currentLesson.room?.number || '-'}</div></> : <><div className="widget-value">??? ?????</div><div className="countdown-timer">{countdown}</div></>}
       </div>
-      
-      {/* Виджет "Сегодня уроков" */}
-      <div className="widget-card hover-lift">
-        <div className="widget-header">
-          <div className="widget-icon">
-            <Icon name="calendar" />
-          </div>
-          <div>
-            <div className="widget-title">Сегодня уроков</div>
-          </div>
-        </div>
-        <div className="widget-value">
-          {todayLessons || 0}
-        </div>
-        <div style={{ fontSize: 13, marginTop: 8, color: 'var(--text-secondary)' }}>
-          ⚡ Всего в базе: {schedule.length}
-        </div>
-      </div>
-      
-      {/* Виджет "Ближайшая замена" */}
-      <div className="widget-card hover-lift">
-        <div className="widget-header">
-          <div className="widget-icon">
-            <Icon name="refresh" />
-          </div>
-          <div>
-            <div className="widget-title">Ближайшая замена</div>
-          </div>
-        </div>
-        {(() => {
-          const now = currentTime
-          const currentDay = now.getDay() === 0 ? 7 : now.getDay()
-          const currentHour = now.getHours()
-          let currentPeriod = Math.floor((currentHour - 8) / 1.2) + 1
-          if (currentPeriod < 1) currentPeriod = 1
-          if (currentPeriod > 8) currentPeriod = 8
-          
-          const substitutions = schedule
-            .filter(s => s.is_substitution)
-            .sort((a, b) => {
-              if (a.day_of_week !== b.day_of_week) return a.day_of_week - b.day_of_week
-              return a.period_number - b.period_number
-            })
-          const nextSub = substitutions.find(s => 
-            s.day_of_week > currentDay || 
-            (s.day_of_week === currentDay && s.period_number >= currentPeriod)
-          )
-          return nextSub ? (
-            <>
-              <div className="widget-value">{nextSub.subject?.name}</div>
-              <div style={{ fontSize: 13 }}>
-                {dayNamesShort[nextSub.day_of_week]}, {nextSub.period_number} урок
-              </div>
-              <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                вместо {nextSub.teacher?.full_name?.split(' ')[0]}
-              </div>
-            </>
-          ) : (
-            <div className="widget-value">Нет замен</div>
-          )
-        })()}
-      </div>
-      
-      {/* Виджет "Свободные кабинеты" */}
-      <div className="widget-card hover-lift">
-        <div className="widget-header">
-          <div className="widget-icon">
-            <Icon name="book" />
-          </div>
-          <div>
-            <div className="widget-title">Свободные кабинеты</div>
-          </div>
-        </div>
-        <div className="widget-value">
-          {rooms.length - new Set(schedule.map(s => s.room?.id)).size}
-        </div>
-        <div style={{ fontSize: 13, marginTop: 8 }}>
-          из {rooms.length} кабинетов
-        </div>
-        {busyRoomsNow.length > 0 && (
-          <div style={{ fontSize: 11, marginTop: 8, color: 'var(--text-secondary)' }}>
-            🔴 Сейчас заняты: {busyRoomsNow.slice(0, 3).join(', ')}{busyRoomsNow.length > 3 ? '...' : ''}
-          </div>
-        )}
-      </div>
-      
-      {/* Виджет "Нагрузка по дням" */}
-      <div className="widget-card hover-lift">
-        <div className="widget-header">
-          <div className="widget-icon">
-            <Icon name="trending" />
-          </div>
-          <div>
-            <div className="widget-title">Нагрузка по дням</div>
-          </div>
-        </div>
-        <div className="week-stats-chart">
-          {[1, 2, 3, 4, 5, 6, 7].map(day => (
-            <div key={day} style={{ flex: 1, textAlign: 'center' }}>
-              <div 
-                className="chart-bar" 
-                style={{ height: `${(lessonsByDay[day] / maxLessons) * 60}px` }}
-              />
-              <div className="chart-label">{dayNamesShort[day]}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Виджет "Топ учителей" */}
-      <div className="widget-card hover-lift">
-        <div className="widget-header">
-          <div className="widget-icon">
-            <Icon name="user" />
-          </div>
-          <div>
-            <div className="widget-title">Нагрузка учителей</div>
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {teacherLoad.map(([name, count], idx) => (
-            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ 
-                width: 24, 
-                height: 24, 
-                background: `linear-gradient(135deg, ${subjectColors[idx % subjectColors.length]}40, ${subjectColors[idx % subjectColors.length]}20)`,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 12,
-                fontWeight: 700
-              }}>
-                {idx + 1}
-              </div>
-              <div style={{ flex: 1, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {name.length > 20 ? name.slice(0, 20) + '…' : name}
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 700 }}>{count}</div>
-            </div>
-          ))}
-          {teacherLoad.length === 0 && (
-            <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 16 }}>
-              Нет данных
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
 
-// ============================================
-// ПАРАЛЛАКС-ФОН
-// ============================================
-function ParallaxBackground() {
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      const layers = document.querySelectorAll('.parallax-layer')
-      const mouseX = e.clientX / window.innerWidth
-      const mouseY = e.clientY / window.innerHeight
-      
-      layers.forEach((layer, index) => {
-        const speed = 0.02 * (index + 1)
-        const x = (mouseX - 0.5) * speed * 100
-        const y = (mouseY - 0.5) * speed * 100
-        layer.style.transform = `translate(${x}px, ${y}px)`
-      })
-    }
-    
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
-  
-  return (
-    <div className="parallax-bg">
-      <div className="parallax-layer parallax-layer-1"></div>
-      <div className="parallax-layer parallax-layer-2"></div>
-      <div className="parallax-layer parallax-layer-3"></div>
-      <div className="parallax-layer parallax-layer-4"></div>
-      
-      <div className="floating-shape shape-circle" style={{ top: '15%', left: '10%', width: 100, height: 100 }} />
-      <div className="floating-shape shape-square" style={{ bottom: '20%', right: '8%', width: 70, height: 70 }} />
-      <div className="floating-shape shape-triangle" style={{ top: '60%', left: '85%' }} />
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="calendar" /></div><div><div className="widget-title">??????? ??????</div></div></div><div className="widget-value">{todayLessons}</div><div style={{ fontSize: 13, marginTop: 8, color: 'var(--text-secondary)' }}>????? ? ??????????: {schedule.length}</div></div>
+
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="refresh" /></div><div><div className="widget-title">????????? ??????</div></div></div>{nearestSubstitution ? <><div className="widget-value">{nearestSubstitution.subject?.name}</div><div style={{ fontSize: 13 }}>{dayNamesShort[nearestSubstitution.day_of_week]}, {nearestSubstitution.period_number} ????</div><div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>???????: {nearestSubstitution.teacher?.full_name?.split(' ')[0]}</div></> : <div className="widget-value">??? ?????</div>}</div>
+
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="book" /></div><div><div className="widget-title">????????? ???????? ??????</div></div></div><div className="widget-value">{freeRoomsNow ?? '-'}</div><div style={{ fontSize: 13, marginTop: 8 }}>{bellPeriods.length ? '?? ' + rooms.length + ' ?????????' : '??? ?????? ? ???????'}</div>{busyRoomsNow.length > 0 && <div style={{ fontSize: 11, marginTop: 8, color: 'var(--text-secondary)' }}>?????? ??????: {busyRoomsNow.slice(0, 3).map((room) => room.number).join(', ')}{busyRoomsNow.length > 3 ? '...' : ''}</div>}</div>
+
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="trending" /></div><div><div className="widget-title">???????? ?? ????</div></div></div><div className="week-stats-chart">{Object.keys(lessonsByDay).map((day) => Number(day)).map((day) => <div key={day} style={{ flex: 1, textAlign: 'center' }}><div className="chart-bar" style={{ height: ((lessonsByDay[day] / maxLessons) * 60) + 'px' }} /><div className="chart-label">{dayNamesShort[day]}</div></div>)}</div></div>
+
+      <div className="widget-card hover-lift"><div className="widget-header"><div className="widget-icon"><Icon name="user" /></div><div><div className="widget-title">???????? ????????</div></div></div><div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{teacherLoad.map(([name, count], idx) => <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}><div style={{ width: 24, height: 24, background: 'linear-gradient(135deg, ' + subjectColors[idx % subjectColors.length] + '40, ' + subjectColors[idx % subjectColors.length] + '20)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>{idx + 1}</div><div style={{ flex: 1, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name.length > 20 ? name.slice(0, 20) + '?' : name}</div><div style={{ fontSize: 16, fontWeight: 700 }}>{count}</div></div>)}{teacherLoad.length === 0 && <div style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 16 }}>??? ??????</div>}</div></div>
     </div>
   )
 }
@@ -701,6 +473,7 @@ function App() {
   const [authError, setAuthError] = useState('')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
+  const [generating, setGenerating] = useState(false)
   const [calendarView, setCalendarView] = useState(false)
 
   const [schools, setSchools] = useState([])
@@ -975,21 +748,27 @@ function App() {
   }
 
   const generateSchedule = async () => {
-    if (!filters.academic_year) {
+    const academicYearId = filters.academic_year || currentYear?.id || academicYears[0]?.id
+
+    if (!academicYearId) {
       setMessage('Для генерации выберите учебный год.')
       return
     }
 
-    setLoading(true)
+    setGenerating(true)
     setMessage('')
     try {
-      const result = await api.generateSchedule(filters.academic_year)
-      setMessage(result.detail || 'Запрос на генерацию отправлен.')
+      if (!filters.academic_year) {
+        setFilter('academic_year', academicYearId)
+      }
+
+      const result = await api.generateSchedule(academicYearId)
+      setMessage(result?.detail || 'Запрос на генерацию отправлен.')
       await loadSchedule()
     } catch (error) {
       setMessage(error.message)
     } finally {
-      setLoading(false)
+      setGenerating(false)
     }
   }
 
@@ -1029,7 +808,6 @@ function App() {
   if (!isAuthed) {
     return (
       <main className="auth-page">
-        <ParallaxBackground />
         <AuthPanel
           authMode={authMode}
           loading={loading}
@@ -1048,7 +826,6 @@ function App() {
 
   return (
     <main className="app-shell">
-      <ParallaxBackground />
       <aside className="sidebar" aria-label="Навигация">
         <button className="brand" type="button" onClick={() => setScreen('workspace')}>
           <span className="brand-mark">S</span>
@@ -1160,6 +937,7 @@ function App() {
             filters={filters}
             isStaff={isStaff}
             loading={loading}
+            generating={generating}
             rooms={rooms}
             schedule={schedule}
             selectedEntryId={selectedEntryId}
@@ -1182,6 +960,7 @@ function App() {
         ) : (
           <PublicScheduleScreen
             academicYears={academicYears}
+            bellSchedules={bellSchedules}
             classGroups={classGroups}
             currentSchool={currentSchool}
             currentYear={currentYear}
@@ -1212,11 +991,11 @@ function App() {
 // ============================================
 function PublicScheduleScreen({
   academicYears,
+  bellSchedules,
   classGroups,
   currentSchool,
   currentYear,
   filters,
-  loading,
   rooms,
   schedule,
   schools,
@@ -1249,10 +1028,10 @@ function PublicScheduleScreen({
       <section className="editor-main">
         {/* Виджеты */}
         <WidgetsGrid 
+          bellSchedules={bellSchedules}
           schedule={schedule} 
-          teachers={teachers} 
           rooms={rooms} 
-          classGroups={classGroups}
+          weekDaysCount={currentSchool?.week_days_count || 5}
           onLessonClick={onLessonClick}
         />
         
@@ -1371,6 +1150,7 @@ function AdminScheduleScreen({
   filters,
   isStaff,
   loading,
+  generating,
   rooms,
   schedule,
   selectedEntryId,
@@ -1407,10 +1187,10 @@ function AdminScheduleScreen({
     <div className="editor-layout">
       <section className="editor-main">
         <WidgetsGrid 
+          bellSchedules={bellSchedules}
           schedule={schedule} 
-          teachers={teachers} 
           rooms={rooms} 
-          classGroups={classGroups}
+          weekDaysCount={currentSchool?.week_days_count || 5}
           onLessonClick={onLessonClick}
         />
         
@@ -1480,9 +1260,9 @@ function AdminScheduleScreen({
           >
             <Icon name="calendar" />
           </button>
-          <button className="primary-button" type="button" onClick={generateSchedule} disabled={loading}>
+          <button className="primary-button generate-button" type="button" onClick={generateSchedule} disabled={loading || generating}>
             <Icon name="wand" />
-            Генерировать
+            {generating ? 'Генерируем...' : 'Генерировать'}
           </button>
         </div>
 
@@ -1580,10 +1360,10 @@ function AuthPanel({
           заменами в одном рабочем пространстве.
         </p>
         <div className="feature-grid">
-          <span>✨ Авторизация сотрудников</span>
-          <span>📅 Расписание по классам</span>
-          <span>🤖 Генерация учебной недели</span>
-          <span>🏫 Кабинеты, звонки и каникулы</span>
+          <span>Авторизация сотрудников</span>
+          <span>Расписание по классам</span>
+          <span>Генерация учебной недели</span>
+          <span>Кабинеты, звонки и каникулы</span>
         </div>
       </div>
 
@@ -2111,17 +1891,17 @@ function DirectoryCard({ type, item, openShortcutSchedule, delay = 0 }) {
       </div>
       {type === 'classes' && (
         <button className="ghost-button wide" type="button" onClick={() => openShortcutSchedule('class', item.id)}>
-          📅 Расписание класса
+          Расписание класса
         </button>
       )}
       {type === 'teachers' && (
         <button className="ghost-button wide" type="button" onClick={() => openShortcutSchedule('teacher', item.id)}>
-          👨‍🏫 Расписание учителя
+          Расписание учителя
         </button>
       )}
       {type === 'rooms' && (
         <button className="ghost-button wide" type="button" onClick={() => openShortcutSchedule('room', item.id)}>
-          🏫 Расписание кабинета
+          Расписание кабинета
         </button>
       )}
     </article>

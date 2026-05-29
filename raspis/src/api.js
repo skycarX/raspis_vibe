@@ -49,7 +49,15 @@ async function request(path, options = {}, retry = true) {
   if (response.status === 204) return null
 
   const text = await response.text()
-  const data = text ? JSON.parse(text) : null
+  let data = null
+
+  if (text) {
+    try {
+      data = JSON.parse(text)
+    } catch {
+      data = { detail: text }
+    }
+  }
 
   if (!response.ok) {
     const detail = data?.detail || data?.non_field_errors?.join?.(', ') || response.statusText
