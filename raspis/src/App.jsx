@@ -862,14 +862,14 @@ function App() {
               Управление
             </button>
           )}
-          <button
+          {/* <button
             className={screen === 'access' ? 'nav-item active' : 'nav-item'}
             type="button"
             onClick={() => setScreen('access')}
           >
             <Icon name="user" />
             Доступ
-          </button>
+          </button> */}
           <button className="nav-item" type="button" onClick={handleLogout}>
             <Icon name="shield" />
             Выйти

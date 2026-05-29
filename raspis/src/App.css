@@ -845,7 +845,7 @@ button:focus-visible {
 
 .editor-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 360px;
+  /* grid-template-columns: minmax(0, 1fr) 360px; */
   gap: 18px;
   align-items: start;
 }
@@ -2067,7 +2067,7 @@ input[type='range'] {
 }
 
 .editor-layout {
-  grid-template-columns: minmax(0, 1fr) 340px;
+  /* grid-template-columns: minmax(0, 1fr) 340px; */
   gap: 16px;
 }
 
